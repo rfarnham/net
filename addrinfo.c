@@ -2,6 +2,7 @@
 #include <netdb.h>
 #include <stdio.h>
 #include <err.h>
+#include <string.h>
 
 #define AI_FLAG_NUM 10
 int flags[AI_FLAG_NUM] = {AI_ADDRCONFIG, AI_ALL, AI_CANONNAME, AI_NUMERICHOST,
@@ -70,7 +71,7 @@ void print_addr(struct sockaddr* ai_addr) {
   struct sockaddr_in6* ipv6;
   switch (ai_addr->sa_family) {
   case AF_INET:
-    ipv4 = ((struct sockaddr_in*)ai_addr);
+    ipv4 = (struct sockaddr_in*)ai_addr;
     char ipv4_address[INET_ADDRSTRLEN];
     inet_ntop(AF_INET, &(ipv4->sin_addr), ipv4_address, INET_ADDRSTRLEN);
     puts(ipv4_address);
@@ -115,8 +116,11 @@ int main(int argc, char** argv) {
   }
 
   struct addrinfo* res_list;
+  struct addrinfo hints;
+  memset(&hints, 0, sizeof(hints));
+  hints.ai_flags = AI_CANONNAME;
 
-  int error = getaddrinfo(argv[1], NULL, NULL, &res_list);
+  int error = getaddrinfo(argv[1], NULL, &hints, &res_list);
   if (error) {
     errx(1, "%s", gai_strerror(error));
     return 1;
